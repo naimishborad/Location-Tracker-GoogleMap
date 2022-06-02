@@ -1,18 +1,16 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:fluttergooglemaps/auth.dart';
-import 'package:fluttergooglemaps/mymap.dart';
+import 'package:fluttergooglemaps/Authentication/auth.dart';
+import 'package:fluttergooglemaps/Pages/mymap.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:location/location.dart' as loc;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
-  Home({Key? key}) : super(key: key);
+  const Home({Key? key}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
@@ -25,7 +23,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 56, 53, 87),
+      backgroundColor: const Color.fromARGB(255, 56, 53, 87),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -34,9 +32,9 @@ class _HomeState extends State<Home> {
           IconButton(onPressed: (){
             final provider = Provider.of<Auth>(context,listen: false);
               provider.signOut();
-          }, icon:Icon(Icons.logout,color: Colors.white,))
+          }, icon:const Icon(Icons.logout,color: Colors.white,))
         ],
-        title: Text('Live Location Tracker',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+        title: const Text('Live Location Tracker',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
       ),
       
       body: Center(
@@ -46,37 +44,37 @@ class _HomeState extends State<Home> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 30, 0, 5),
-              child: Text('Welcome ${user!.displayName.toString()}',style: TextStyle(color: Colors.white,fontSize: 25),),
+              child: Text('Welcome ${user!.displayName.toString()}',style: const TextStyle(color: Colors.white,fontSize: 25),),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 50),
-              child: Text('Email: ${user!.email.toString()}',style: TextStyle(color: Colors.white60),),
+              child: Text('Email: ${user!.email.toString()}',style: const TextStyle(color: Colors.white60),),
             ),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                 fixedSize: Size(200, 30),
+                 fixedSize: const Size(200, 30),
                  onPrimary: Colors.black,
                 primary: Colors.white
               ),
-              icon: Icon(Icons.add), onPressed: _getLocation, label: Text('Add Live location')),
+              icon: const Icon(Icons.add), onPressed: _getLocation, label: const Text('Add Live location')),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                fixedSize: Size(200, 30),
+                fixedSize: const Size(200, 30),
                 onPrimary: Colors.black,
                 primary: Colors.white
               ),
-              icon: Icon(Icons.location_on), onPressed: _listenLocation, label: Text('Enable Live location')),
+              icon: const Icon(Icons.location_on), onPressed: _listenLocation, label: const Text('Enable Live location')),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                 fixedSize: Size(200, 30),
+                 fixedSize: const Size(200, 30),
                 primary: Colors.white,
                 onPrimary: Colors.black
               ),
-              icon: Icon(Icons.location_off), onPressed: _stopListening, label: Text('Stop Live location')),
-              SizedBox(height: 30,),    
+              icon: const Icon(Icons.location_off), onPressed: _stopListening, label: const Text('Stop Live location')),
+              const SizedBox(height: 30,),    
              Expanded(
                   child: StreamBuilder(
                       stream: FirebaseFirestore.instance
@@ -84,7 +82,7 @@ class _HomeState extends State<Home> {
                           .snapshots(),
                       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (!snapshot.hasData) {
-                          return Center(child: CircularProgressIndicator());
+                          return const Center(child: CircularProgressIndicator());
                         }
                         return ListView.builder(
                             itemCount: snapshot.data?.docs.length,
@@ -97,12 +95,12 @@ class _HomeState extends State<Home> {
                                 subtitle: Row(
                                   children: [
                                     Text(snapshot.data!.docs[index]['latitude']
-                                        .toString(),style: TextStyle(color: Colors.white54),),
-                                    SizedBox(
+                                        .toString(),style: const TextStyle(color: Colors.white54),),
+                                    const SizedBox(
                                       width: 20,
                                     ),
                                     Text(snapshot.data!.docs[index]['longitude']
-                                        .toString(),style: TextStyle(color: Colors.white54)),
+                                        .toString(),style: const TextStyle(color: Colors.white54)),
                                   ],
                                 ),
                                 trailing: IconButton(
@@ -114,7 +112,7 @@ class _HomeState extends State<Home> {
                                   },
                                 ),
                                 leading: IconButton(
-                                  icon: Icon(Icons.delete,color: Colors.redAccent,),
+                                  icon: const Icon(Icons.delete,color: Colors.redAccent,),
                                   onPressed: () {
                                     delete(snapshot.data!.docs[index]['name']);
                                   },
@@ -130,35 +128,37 @@ class _HomeState extends State<Home> {
   }
 
   delete(item) {
-   final provider = Provider.of<Auth>(context,listen: false);
     DocumentReference documentReference =
         FirebaseFirestore.instance.collection(user!.email.toString()).doc(item);
 
+        // ignore: avoid_print
         documentReference.delete().whenComplete(() => print("deleted successfully"));
   }
 
    _getLocation() async {
     try {
-      final loc.LocationData _locationResult = await location.getLocation();
+      final loc.LocationData locationResult = await location.getLocation();
       await FirebaseFirestore.instance.collection(user!.email.toString()).doc(user!.displayName).set({
-        'latitude': _locationResult.latitude,
-        'longitude': _locationResult.longitude,
+        'latitude': locationResult.latitude,
+        'longitude': locationResult.longitude,
         'name': user!.displayName.toString()
       }, SetOptions(merge: true));
     } catch (e) {
+      // ignore: avoid_print
       print(e);
     }
   }
 
   Future<void> _listenLocation() async {
     _locationSubscription = location.onLocationChanged.handleError((onError) {
+      // ignore: avoid_print
       print(onError);
       _locationSubscription?.cancel();
       setState(() {
         _locationSubscription = null;
       });
     }).listen((loc.LocationData currentlocation) async {
-      final provider = Provider.of<Auth>(context,listen: false);
+      
       await FirebaseFirestore.instance.collection(user!.email.toString()).doc(user!.displayName).set({
         'latitude': currentlocation.latitude,
         'longitude': currentlocation.longitude,
@@ -177,6 +177,7 @@ class _HomeState extends State<Home> {
   _requestPermission() async {
     var status = await Permission.location.request();
     if (status.isGranted) {
+      // ignore: avoid_print
       print('done');
     } else if (status.isDenied) {
       _requestPermission();
