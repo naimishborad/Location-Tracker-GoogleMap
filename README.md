@@ -1,0 +1,2 @@
+# Location-Tracker-GoogleMap
+This is an example of Location Tracker app made with google maps sdk and Firebase.Every User has different collection in Firebase as they signin with google account.This application tracks live location of user and shows it on google map.I have integrated all maps mode like traffic,terrain,hybrid,sattelite in this app,user can select any of them.More features will be added soon.
